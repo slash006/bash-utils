@@ -5,6 +5,7 @@ timestamp=$(date +"%Y_%m_%d_%H_%M_%S")
 text_content=""
 content_dir="content_files"
 output_json="false"
+output_format=""
 json_file="${content_dir}/typing_results.json"
 
 # Create the content directory if it doesn't exist
@@ -39,6 +40,20 @@ check_jq_installed() {
     fi
 }
 
+# Handle output based on the selected format
+handle_output() {
+    local typed_text="$1"
+    local duration="$2"
+
+    if [[ $output_format == "json" ]]; then
+        update_json_file "$typed_text" "$keyboard" "$duration" "$timestamp"
+    elif [[ $output_format == "text" ]]; then
+        local content_file="${content_dir}/${keyboard}_content_${timestamp}.txt"
+        echo "$typed_text" > "$content_file"
+        echo "$content_file | ${duration}s" >> "$summary_file"
+    fi
+}
+
 show_summary() {
     local text_fragment="$1"
     if [[ -z $text_fragment ]]; then
@@ -55,15 +70,13 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --keyboard) keyboard="$2"; shift ;;
         --text) text_file="$2"; shift ;;
-	      --show-summary)
+        --output-result)
+            output_format="$2"
+            shift
+        ;;
+        --show-summary)
             show_summary "$2"
             exit 0
-        ;;
-        --output-result)
-            if [[ $2 == "json" ]]; then
-                output_json="true"
-            fi
-            shift
         ;;
         --help)
             show_help
@@ -138,12 +151,15 @@ measure_typing_speed() {
     echo "Result saved in file: $content_file"
     echo "Summary saved in file: $summary_file"
 
-    # Handle JSON output
-    handle_json_output
+    # Handle output
+    handle_output "$typed_text" "$duration"
 }
 
-# Check if jq is installed before proceeding
-check_jq_installed
+# Check if jq is installed before proceeding with JSON output
+if [[ $output_format == "json" ]]; then
+    check_jq_installed
+fi
+
 
 # Run the typing speed measurement function
 measure_typing_speed

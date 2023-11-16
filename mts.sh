@@ -10,6 +10,23 @@ json_file="${content_dir}/typing_results.json"
 # Create the content directory if it doesn't exist
 mkdir -p "$content_dir"
 
+show_help() {
+    echo "Typing Speed Measurement Script"
+    echo "This script measures typing speed and can handle various operations based on provided parameters." # TODO
+    echo
+    echo "Usage:"
+    echo "  $0 [--keyboard <keyboard_name>] [--text <file_path>] [--output-result json] [--show-summary [<text_fragment>]] [--help]"
+    echo
+    echo "Parameters:"
+    echo "  --keyboard <keyboard_name>   Set the name of the keyboard (e.g., 'dell')."
+    echo "  --text <file_path>           Specify a text file to display its content before typing."
+    echo "  --output-result json         Save the results in a JSON file."
+    echo "  --show-summary [<text_fragment>]  Show a summary of results. If a text fragment is provided, show results for it."
+    echo "  --help                       Display this help message."
+    echo
+}
+
+
 # Check if jq is installed
 check_jq_installed() {
     if ! command -v jq &> /dev/null; then
@@ -38,7 +55,7 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --keyboard) keyboard="$2"; shift ;;
         --text) text_file="$2"; shift ;;
-	--show-summary)
+	      --show-summary)
             show_summary "$2"
             exit 0
         ;;
@@ -47,6 +64,10 @@ while [[ "$#" -gt 0 ]]; do
                 output_json="true"
             fi
             shift
+        ;;
+        --help)
+            show_help
+            exit 0
         ;;
         *) echo "Unknown parameter: $1"; exit 1 ;;
     esac

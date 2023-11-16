@@ -51,16 +51,25 @@ update_json_file() {
     local keyboard=$2
     local speed=$3
     local timestamp=$4
+    local temp_json=$(mktemp)
 
     # Check if the JSON file already exists, if not, create it
     if [[ ! -f $json_file ]]; then
         echo "[]" > "$json_file"
     fi
 
-    # Update the JSON file with new results
-    jq --arg text "$text" --arg keyboard "$keyboard" --arg speed "$speed" --arg timestamp "$timestamp" '
-        . += [{"text": $text, "results": [{"keyboard": $keyboard, "speed": $speed, "timestamp": $timestamp}]}]
-    ' "$json_file" > "$temp_json" && mv "$temp_json" "$json_file"
+    # Check if the text already exists in the JSON file
+    if jq -e --arg text "$text" '.[] | select(.text == $text)' "$json_file" > /dev/null; then
+        # Update the existing entry
+        jq --arg text "$text" --arg keyboard "$keyboard" --arg speed "$speed" --arg timestamp "$timestamp" '
+            map(if .text == $text then .results += [{"keyboard": $keyboard, "speed": $speed, "timestamp": $timestamp}] else . end)
+        ' "$json_file" > "$temp_json" && mv "$temp_json" "$json_file"
+    else
+        # Add a new entry
+        jq --arg text "$text" --arg keyboard "$keyboard" --arg speed "$speed" --arg timestamp "$timestamp" '
+            . += [{"text": $text, "results": [{"keyboard": $keyboard, "speed": $speed, "timestamp": $timestamp}]}]
+        ' "$json_file" > "$temp_json" && mv "$temp_json" "$json_file"
+    fi
 }
 
 # Function to handle JSON output

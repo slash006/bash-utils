@@ -25,11 +25,11 @@ check_jq_installed() {
 show_summary() {
     local text_fragment="$1"
     if [[ -z $text_fragment ]]; then
-        # Show summary for all texts
-        jq '.[] | .text as $text | .results | max_by(.speed | tonumber) | [$text, .keyboard, .speed]' "$json_file"
+        # Show the best result for each text
+        jq '.[] | .text as $text | .results | min_by(.speed | tonumber) | {"text": $text, "keyboard": .keyboard, "speed": .speed}' "$json_file"
     else
-        # Show summary for a specific text fragment
-        jq --arg text_fragment "$text_fragment" '.[] | select(.text | contains($text_fragment)) | .text as $text | .results | max_by(.speed | tonumber) | [$text, .keyboard, .speed]' "$json_file"
+        # Show all results for a specific text fragment
+        jq --arg text_fragment "$text_fragment" '.[] | select(.text | contains($text_fragment)) | {"text": .text, "results": .results}' "$json_file"
     fi
 }
 
@@ -82,7 +82,7 @@ update_json_file() {
         ' "$json_file" > "$temp_json" && mv "$temp_json" "$json_file"
     else
         # Add a new entry
-	      echo "adding new json entry"
+	echo "adding new json entry"
         jq --arg text "$text" --arg keyboard "$keyboard" --arg speed "$speed" --arg timestamp "$timestamp" '
             . += [{"text": $text, "results": [{"keyboard": $keyboard, "speed": $speed, "timestamp": $timestamp}]}]
         ' "$json_file" > "$temp_json" && mv "$temp_json" "$json_file"
@@ -94,7 +94,7 @@ update_json_file() {
 handle_json_output() {
     echo "check if handle json"
     if [[ $output_json == "true" ]]; then
-	      echo "handle json update!"
+	echo "handle json update!"
         update_json_file "$typed_text" "$keyboard" "$duration" "$timestamp"
     fi
 }

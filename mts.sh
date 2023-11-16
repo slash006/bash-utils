@@ -21,7 +21,7 @@ show_help() {
     echo "Parameters:"
     echo "  --keyboard <keyboard_name>   Set the name of the keyboard (e.g., 'dell')."
     echo "  --text <file_path>           Specify a text file to display its content before typing."
-    echo "  --output-result json         Save the results in a JSON file."
+    echo "  --output-result json|text         Save the results in a JSON or TXT file."
     echo "  --show-summary [<text_fragment>]  Show a summary of results. If a text fragment is provided, show results for it."
     echo "  --help                       Display this help message."
     echo
@@ -35,7 +35,7 @@ check_jq_installed() {
         read -r install_choice
         if [[ $install_choice == "y" ]]; then
             # Assuming a Debian/Ubuntu-based system
-            sudo apt-get install jq
+            sudo apt-get -y install jq
         fi
     fi
 }

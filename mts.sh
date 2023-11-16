@@ -5,7 +5,7 @@ timestamp=$(date +"%Y_%m_%d_%H_%M_%S")
 text_content=""
 content_dir="content_files"
 output_json="false"
-output_format=""
+output_format="json"
 json_file="${content_dir}/typing_results.json"
 
 # Create the content directory if it doesn't exist
